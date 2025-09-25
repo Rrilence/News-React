@@ -7,9 +7,10 @@ interface Parametrs {
     page_number: number,
     page_size: number,
     category: string,
+    keywords: string,
 }
 
-export const getNews = async ({page_number = 1, page_size = 10, category}: Parametrs) => {
+export const getNews = async ({page_number = 1, page_size = 10, category, keywords}: Parametrs) => {
     try {
         const res = await axios.get(`${BASE_URL}search`, {
             params: {
@@ -17,6 +18,7 @@ export const getNews = async ({page_number = 1, page_size = 10, category}: Param
                 page_number,
                 page_size,
                 category,
+                keywords,
             }
         })
         return res.data
