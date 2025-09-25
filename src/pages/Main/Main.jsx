@@ -4,42 +4,71 @@ import styles from './styles.module.css'
 import { getNews } from '../../api/apiNews';
 import {NewsList} from '../../components/NewsList/NewsList'
 import Skeleton from '../../components/Skeleton/Skeleton';
+import Pagination from '../../components/Pagination/Pagination';
 
 
 const Main = () => {
 
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const totalPages = 10;
+    const pageSize = 10;
 
+    const fetchNews = async (currentPage) => {
+        try {
+            setLoading(true)
+            const res = await getNews(currentPage, pageSize);
+            if (res && res.news && Array.isArray(res.news)) {
+                setNews(res.news);
+                setLoading(false)
+            } else {
+                console.error("Неправильный формат данных из API:", res);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
-        const fetchNews = async () => {
-            try {
-                setLoading(true)
-                const res = await getNews();
-                if (res && res.news && Array.isArray(res.news)) {
-                    setNews(res.news);
-                    setLoading(false)
-                } else {
-                    console.error("Неправильный формат данных из API:", res);
-                }
+        fetchNews(currentPage);
+    }, [currentPage]);
 
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
         }
-        fetchNews();
-    }, []);
+    }
+    const handlePreviosPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+    const handlePageClick = (pageNumber) => {
+            setCurrentPage(pageNumber)
+    }
 
     return (
         <main className={styles.main}>
             {news && news.length > 0 && !loading ? <NewsBanner item={news[0]} /> : <Skeleton type={'banner'} count={1}/>}
+            <Pagination 
+            totalPages={totalPages} 
+            handleNextPage={handleNextPage} 
+            handlePreviosPage={handlePreviosPage} 
+            handlePageClick={handlePageClick}
+            currentPage={currentPage}/>
             {
                 !loading ? <NewsList news={news}/> 
                 : <Skeleton type={'item'} count={10}/>
             }
+            <Pagination 
+            totalPages={totalPages} 
+            handleNextPage={handleNextPage} 
+            handlePreviosPage={handlePreviosPage} 
+            handlePageClick={handlePageClick}
+            currentPage={currentPage}/>
         </main>
     );
 }
